@@ -8,17 +8,17 @@ public class LevelEditor : MonoBehaviour
     const string DLL_NAME = "tut2";
 
     [DllImport(DLL_NAME)]
-    static extern void saveLocation([In, Out] Vector4[] vecArray, int vecSize);
+    static extern void locSave([In, Out] Vector4[] vecArray, int vecSize);
     [DllImport(DLL_NAME)]
-    static extern void loadLocation();
+    static extern void locLoad();
     [DllImport(DLL_NAME)]
     static extern int getSize();
     [DllImport(DLL_NAME)]
-    static extern System.IntPtr getPosition();
+    static extern System.IntPtr getPos();
 
     int size;
     float[] location;
-    
+
     // game object variables 
     public GameObject hole;
     public GameObject wall;
@@ -26,15 +26,16 @@ public class LevelEditor : MonoBehaviour
 
     public Factory factory;
 
-   
+
     List<Vector4> test = new List<Vector4>();
     Vector4 tempVec;
 
     static private List<GameObject> holeList = new List<GameObject>();
     static private List<GameObject> wallList = new List<GameObject>();
-    public void saveLocation()
+
+    public void SaveLocation()
     {
-   
+
         for (int i = 0; i < wallList.Count; i++)
         {
             tempVec = new Vector4(wallList[i].transform.localPosition.x, wallList[i].transform.localPosition.y, wallList[i].transform.localPosition.z, 1.0f);
@@ -49,41 +50,49 @@ public class LevelEditor : MonoBehaviour
 
         test.ToArray();
 
-        saveLocation(test.ToArray(), (test.Count * 4));
+        locSave(test.ToArray(), (test.Count * 4));
 
     }
 
     public void LoadLocation()
     {
+        //foreach (var obj in wallList)
+        //{
+        //    Destroy(obj);
+        //}
+        //foreach (var obj in holeList)
+        //{
+        //    Destroy(obj);
+        //}
         holeList.Clear();
         wallList.Clear();
-       
+
         size = getSize();
 
         Debug.Log(size);
 
-        location  = new float[size];
+        location = new float[size];
 
-        loadLocation();
+        locLoad();
 
-        Marshal.Copy(getPosition (), location , 0, size);
+        Marshal.Copy(getPos(), location, 0, size);
 
         int wallNum = 0, holeNum = 0;
 
         for (int i = 0; i < size; i += 4)
         {
-            if (location [i + 3] == 1.0f)
+            if (location[i + 3] == 1.0f)
             {
                 wallList.Add(factory.Spawn(wall));
-                wallList[wallNum].transform.localPosition = new Vector3(location [i], location [i + 1], location [i + 2]);
+                wallList[wallNum].transform.localPosition = new Vector3(location[i], location[i + 1], location[i + 2]);
 
                 wallNum++;
             }
-            else if (location [i + 3] == 2.0f)
+            else if (location[i + 3] == 2.0f)
             {
                 holeList.Add(factory.Spawn(hole)); ;
 
-                holeList[holeNum].transform.localPosition = new Vector3(location [i], location [i + 1], location [i + 2]);
+                holeList[holeNum].transform.localPosition = new Vector3(location[i], location[i + 1], location[i + 2]);
 
                 holeNum++;
             }

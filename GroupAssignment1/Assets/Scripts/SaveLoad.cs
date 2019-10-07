@@ -8,12 +8,14 @@ public class SaveLoad : MonoBehaviour
     float[] location;
 
     [DllImport(DLL_NAME)]
-    static extern void loadLoaction();
+    static extern void locSave([In, Out] Vector4[] vecArray, int vecSize);
+    [DllImport(DLL_NAME)]
+    static extern void locLoad();
     [DllImport(DLL_NAME)]
     static extern int getSize();
     [DllImport(DLL_NAME)]
-    static extern System.IntPtr getPosition();
-   
+    static extern System.IntPtr getPos();
+
 
     List<Vector4> test = new List<Vector4>();
 
@@ -44,36 +46,35 @@ public class SaveLoad : MonoBehaviour
     {
         location = new float[getSize()];
 
-        loadLoaction();
+        locLoad();
 
-        Marshal.Copy(getPosition(), location, 0, getSize());
+        Marshal.Copy(getPos(), location, 0, getSize());
 
         int wallNum = 0, holeNum = 0;
 
-        for (int i = 0; i < getSize(); i += 4)
-        {
-            Debug.Log(location[i + 3]);
-
-            if (location[i + 3] == 2.0f)
+            for (int i = 0; i < getSize(); i += 4)
             {
-                Debug.Log("Hole Spawn");
-                holeList.Add(factory.Spawn(Hole)); ;
+                Debug.Log(location[i + 3]);
 
-                holeList[holeNum].transform.localPosition = new Vector3(location[i], location[i + 1], location[i + 2]);
+                if (location[i + 3] == 1.0f)
+                {
+                    Debug.Log("Wall Spawn");
+                    wallList.Add(factory.Spawn(Wall));
+                    wallList[wallNum].transform.localPosition = new Vector3(location[i], location[i + 1], location[i + 2]);
 
-                holeNum++;
+                    wallNum++;
+                }
+                else if (location[i + 3] == 2.0f)
+                {
+                    Debug.Log("Hole Spawn");
+                    holeList.Add(factory.Spawn(Hole)); ;
 
-            
-            }
-            else if(location[i + 3] == 1.0f)
-            {
-                Debug.Log("Wall Spawn");
-                wallList.Add(factory.Spawn(Wall));
-                wallList[wallNum].transform.localPosition = new Vector3(location[i], location[i + 1], location[i + 2]);
+                    holeList[holeNum].transform.localPosition = new Vector3(location[i], location[i + 1], location[i + 2]);
 
-                wallNum++;
+                    holeNum++;
+                }
             }
         }
+
     }
 
-}
